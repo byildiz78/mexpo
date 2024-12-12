@@ -1,13 +1,12 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { createDrawerNavigator, DrawerContentComponentProps, DrawerNavigationProp } from '@react-navigation/drawer';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Text, StyleSheet, TouchableOpacity, View, SafeAreaView, Platform, StatusBar, Animated, ViewStyle } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, SafeAreaView, Platform, StatusBar, Animated, ViewStyle, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
 import HomeScreen from './src/screens/HomeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import HelpScreen from './src/screens/HelpScreen';
@@ -15,6 +14,7 @@ import SupportScreen from './src/screens/SupportScreen';
 import ContactScreen from './src/screens/ContactScreen';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { UrlProvider } from './src/context/UrlContext';
+import { LanguageProvider, useLanguage } from './src/contexts/LanguageContext';
 import LoadingScreen from './src/components/LoadingScreen';
 import { setupNotificationListeners } from './src/services/notifications';
 
@@ -29,8 +29,19 @@ Notifications.setNotificationHandler({
 
 const Drawer = createDrawerNavigator();
 
+type RootDrawerParamList = {
+  Home: undefined;
+  Settings: undefined;
+  About: undefined;
+  Contact: undefined;
+};
+
+type DrawerScreenProps = DrawerContentComponentProps & {
+  navigation: DrawerNavigationProp<RootDrawerParamList>;
+};
+
 interface CustomHeaderProps {
-  navigation: DrawerNavigationProp<any>;
+  navigation: DrawerNavigationProp<RootDrawerParamList>;
 }
 
 function CustomHeader({ navigation }: CustomHeaderProps) {
@@ -102,54 +113,70 @@ interface CustomDrawerProps {
   navigation: any;
 }
 
-function CustomDrawerContent(props: CustomDrawerProps) {
+function CustomDrawerContent(props: DrawerScreenProps) {
   const { theme } = useTheme();
-  
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { name: t('home'), icon: 'home', route: 'Home' },
+    { name: t('contact'), icon: 'phone', route: 'Contact' },
+    { name: t('about'), icon: 'info', route: 'About' },
+    { name: t('settings'), icon: 'settings', route: 'Settings' },
+  ];
+
   return (
     <LinearGradient
       colors={[theme.background, theme.primary + '20']}
-      style={styles.drawer}
+      style={styles.drawerContainer}
     >
-      <View style={styles.drawerHeader}>
+      <View style={[styles.drawerHeader]}>
         <LinearGradient
-          colors={[theme.headerGradient[0], theme.headerGradient[1]]}
-          style={styles.drawerHeaderGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={[theme.primary, theme.primary + '80']}
+          style={styles.headerContainer}
         >
-          <Text style={styles.drawerTitle}>RobotPOS</Text>
-          <Text style={styles.drawerSubtitle}>Data Manager</Text>
+          <Text style={styles.headerTitle}>RobotPOS</Text>
+          <Text style={styles.headerSubtitle}>Data Manager</Text>
         </LinearGradient>
       </View>
       <View style={styles.drawerContent}>
-        {props.state.routes.map((route: any, index: number) => {
-          const { options } = props.descriptors[route.key];
-          const label = options.drawerLabel;
-          const isFocused = props.state.index === index;
-
-          return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={() => props.navigation.navigate(route.name)}
-              style={[
-                styles.drawerItem,
-                isFocused && { backgroundColor: theme.primary + '30' }
-              ]}
-            >
-              <MaterialIcons
-                name={getIconName(route.name)}
-                size={24}
-                color={isFocused ? theme.primary : theme.secondary}
-              />
-              <Text style={[
-                styles.drawerLabel,
-                { color: isFocused ? theme.primary : theme.secondary }
-              ]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {menuItems.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={() => props.navigation.navigate(item.route)}
+            style={[
+              styles.drawerItem,
+              props.state.index === index && { backgroundColor: theme.primary + '30' }
+            ]}
+          >
+            <MaterialIcons
+              name={item.icon}
+              size={24}
+              color={props.state.index === index ? theme.primary : theme.secondary}
+            />
+            <Text style={[
+              styles.drawerLabel,
+              { color: props.state.index === index ? theme.primary : theme.secondary }
+            ]}>
+              {item.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity
+          onPress={() => {
+            // Çıkış işlemleri burada yapılacak
+            props.navigation.closeDrawer();
+          }}
+          style={styles.drawerItem}
+        >
+          <MaterialIcons
+            name="logout"
+            size={24}
+            color={theme.secondary}
+          />
+          <Text style={[styles.drawerLabel, { color: theme.secondary }]}>
+            {t('logout')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
@@ -190,38 +217,31 @@ function AppNavigator() {
       }}
     >
       <Drawer.Screen 
-        name="Ana Sayfa" 
+        name="Home" 
         component={HomeScreen}
         options={{
-          drawerLabel: 'Ana Sayfa',
+          drawerLabel: 'Home',
         }}
       />
       <Drawer.Screen 
-        name="Ayarlar" 
+        name="Settings" 
         component={SettingsScreen}
         options={{
-          drawerLabel: 'Ayarlar',
+          drawerLabel: 'Settings',
         }}
       />
       <Drawer.Screen 
-        name="Yardım" 
+        name="About" 
         component={HelpScreen}
         options={{
-          drawerLabel: 'Yardım',
+          drawerLabel: 'About',
         }}
       />
       <Drawer.Screen 
-        name="Destek" 
-        component={SupportScreen}
-        options={{
-          drawerLabel: 'Destek',
-        }}
-      />
-      <Drawer.Screen 
-        name="İletişim" 
+        name="Contact" 
         component={ContactScreen}
         options={{
-          drawerLabel: 'İletişim',
+          drawerLabel: 'Contact',
         }}
       />
     </Drawer.Navigator>
@@ -248,20 +268,26 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <ThemeProvider>
-        <LoadingScreen message="RobotPOS Data Manager Yükleniyor" />
-      </ThemeProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <UrlProvider>
+            <LoadingScreen message="RobotPOS Data Manager Yükleniyor" />
+          </UrlProvider>
+        </ThemeProvider>
+      </LanguageProvider>
     );
   }
 
   return (
-    <ThemeProvider>
-      <UrlProvider>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-      </UrlProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <UrlProvider>
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        </UrlProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 
@@ -309,28 +335,28 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  drawer: {
+  drawerContainer: {
     flex: 1,
   },
   drawerHeader: {
     height: 150,
     marginBottom: 10,
   },
-  drawerHeaderGradient: {
+  headerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  drawerTitle: {
-    color: '#fff',
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 5,
   },
-  drawerSubtitle: {
+  headerSubtitle: {
+    fontSize: 16,
     color: '#fff',
-    fontSize: 14,
     opacity: 0.8,
   },
   drawerContent: {

@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme, themes } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { settingsStyles } from '../../styles/settings';
+import { themes } from '../../context/ThemeContext';
 
-export const ThemeSettings = () => {
+export const ThemeSettings: React.FC = () => {
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View style={settingsStyles.section}>
@@ -15,34 +18,39 @@ export const ThemeSettings = () => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <Text style={[settingsStyles.sectionTitle, { color: theme.text }]}>Tema Seçenekleri</Text>
+        <Text style={[settingsStyles.sectionTitle, { color: theme.text }]}>{t('theme')}</Text>
       </LinearGradient>
       <View style={[settingsStyles.sectionContent, { backgroundColor: theme.cardBackground }]}>
         <View style={settingsStyles.themeContainer}>
-          {Object.values(themes).map((themeOption) => (
+          {Object.entries(themes).map(([key, themeOption]) => (
             <TouchableOpacity
-              key={themeOption.name}
-              onPress={() => setTheme(themeOption)}
+              key={key}
               style={[
                 settingsStyles.themeButton,
                 {
-                  backgroundColor: themeOption.cardBackground,
-                  borderColor: theme.name === themeOption.name ? themeOption.primary : theme.border,
-                  shadowColor: theme.shadowColor,
+                  borderColor: theme.name === themeOption.name ? themeOption.primary : themeOption.border,
+                  backgroundColor: themeOption.surface,
                 },
                 theme.name === themeOption.name && settingsStyles.selectedTheme,
               ]}
+              onPress={() => setTheme(themeOption)}
             >
-              <LinearGradient
-                colors={[themeOption.headerGradient[0], themeOption.headerGradient[1]]}
-                style={settingsStyles.themePreview}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+              <View
+                style={[
+                  settingsStyles.themePreview,
+                  {
+                    backgroundColor: themeOption.primary,
+                  },
+                ]}
               />
-              <Text style={[
-                settingsStyles.themeName,
-                { color: themeOption.primary }
-              ]}>
+              <Text
+                style={[
+                  settingsStyles.themeName,
+                  {
+                    color: themeOption.textDark,
+                  },
+                ]}
+              >
                 {themeOption.name}
               </Text>
             </TouchableOpacity>

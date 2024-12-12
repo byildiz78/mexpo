@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useUrl } from '../context/UrlContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { registerForPushNotificationsAsync, setupNotificationListeners } from '../services/notifications';
 import { URLSettings } from '../components/settings/URLSettings';
 import { ThemeSettings } from '../components/settings/ThemeSettings';
 import { TokenSettings } from '../components/settings/TokenSettings';
 import { WebViewSection } from '../components/settings/WebViewSection';
+import { LanguageSettings } from '../components/settings/LanguageSettings';
 import { settingsStyles } from '../styles/settings';
 
 interface MessageData {
@@ -21,6 +23,7 @@ interface MessageData {
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const { baseUrl } = useUrl();
+  const { t } = useLanguage();
   const [pushToken, setPushToken] = useState<string | null>(null);
   const [currentInputValue, setCurrentInputValue] = useState('');
 
@@ -90,15 +93,18 @@ export default function SettingsScreen() {
           showsVerticalScrollIndicator={false}
           bounces={true}
         >
-          <URLSettings />
-          <ThemeSettings />
-          <TokenSettings pushToken={pushToken} />
-          <WebViewSection
-            baseUrl={baseUrl}
-            currentInputValue={currentInputValue}
-            onMessage={handleMessage}
-            onHiddenInputChange={handleHiddenInputChange}
-          />
+          <View style={settingsStyles.content}>
+            <URLSettings />
+            <LanguageSettings />
+            <ThemeSettings />
+            <TokenSettings pushToken={pushToken} />
+            <WebViewSection
+              baseUrl={baseUrl}
+              currentInputValue={currentInputValue}
+              onMessage={handleMessage}
+              onHiddenInputChange={handleHiddenInputChange}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

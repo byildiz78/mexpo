@@ -13,7 +13,7 @@ export const settingsStyles = StyleSheet.create({
   },
   scrollViewContent: {
     padding: 16,
-    gap: 16,
+    gap: 24, // Increased gap between sections
   },
 
   // Common Section Styles
@@ -27,6 +27,7 @@ export const settingsStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginVertical: 8, // Added vertical margin
   },
   sectionHeader: {
     padding: 16,
@@ -131,6 +132,44 @@ export const settingsStyles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
+  // Language Settings Styles
+  languageContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 12,
+    marginTop: 10,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  languageButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#0055CC',
+  },
+  languageButtonText: {
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 8,
+    fontWeight: '500',
+  },
+  languageButtonTextActive: {
+    color: '#fff',
+  },
+
   // Common Button Styles
   buttonContainer: {
     flexDirection: 'row',
@@ -157,6 +196,34 @@ export const settingsStyles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     overflow: 'hidden',
+  },
+
+  // Picker Styles
+  pickerContainer: {
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#f5f5f5',
+    ...Platform.select({
+      ios: {
+        paddingVertical: 8,
+      },
+    }),
+  },
+  picker: {
+    ...Platform.select({
+      android: {
+        backgroundColor: 'transparent',
+      },
+      ios: {
+        backgroundColor: 'transparent',
+      },
+    }),
+  },
+  pickerItemIOS: {
+    fontSize: 16,
+    height: 120,
   },
 
   // WebView Styles

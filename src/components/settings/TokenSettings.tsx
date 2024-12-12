@@ -6,6 +6,7 @@ import { useUrl } from '../../context/UrlContext';
 import { getRootUrl } from '../../utils/url';
 import { sendTokenToServer } from '../../services/notifications';
 import * as Clipboard from 'expo-clipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { settingsStyles } from '../../styles/settings';
 
 interface TokenSettingsProps {
@@ -15,18 +16,19 @@ interface TokenSettingsProps {
 export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
   const { theme } = useTheme();
   const { baseUrl } = useUrl();
+  const { t } = useLanguage();
   const tokenEndpoint = `${getRootUrl(baseUrl)}/api/expo/savetoken`;
 
   const handleCopyToken = async () => {
     if (pushToken) {
-      await Clipboard.setString(pushToken);
-      Alert.alert('Başarılı', 'Token panoya kopyalandı.');
+      await Clipboard.setStringAsync(pushToken);
+      Alert.alert(t('success'), t('tokenCopied'));
     }
   };
 
   const handleManualTokenSend = async () => {
     if (!pushToken) {
-      Alert.alert('Hata', 'Push notification token bulunamadı.');
+      Alert.alert(t('error'), t('noTokenFound'));
       return;
     }
 
@@ -34,9 +36,9 @@ export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
       const testUserId = 'test-user-123';
       const rootUrl = getRootUrl(baseUrl);
       await sendTokenToServer(pushToken, testUserId, rootUrl);
-      Alert.alert('Başarılı', 'Token başarıyla gönderildi.');
+      Alert.alert(t('success'), t('tokenSent'));
     } catch (error) {
-      Alert.alert('Hata', 'Token gönderilirken bir hata oluştu.');
+      Alert.alert(t('error'), t('tokenSendError'));
     }
   };
 
@@ -48,7 +50,7 @@ export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <Text style={[settingsStyles.sectionTitle, { color: theme.text }]}>Push Notification Token</Text>
+        <Text style={[settingsStyles.sectionTitle, { color: theme.text }]}>{t('tokenSettings')}</Text>
       </LinearGradient>
       <View style={[settingsStyles.sectionContent, { backgroundColor: theme.cardBackground }]}>
         <View style={settingsStyles.tokenContainer}>
@@ -58,13 +60,13 @@ export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
             shadowColor: theme.shadowColor,
           }]}>
             <Text style={[settingsStyles.tokenLabel, { color: theme.textDark }]}>
-              Mevcut Token:
+              {t('currentToken')}: 
             </Text>
             <Text style={[settingsStyles.tokenText, { color: theme.textDark }]} numberOfLines={3} ellipsizeMode="middle">
-              {pushToken || 'Token henüz alınmadı'}
+              {pushToken || t('noToken')}
             </Text>
             <Text style={[settingsStyles.tokenLabel, { color: theme.textDark, marginTop: 15 }]}>
-              Token Gönderim Adresi:
+              {t('tokenEndpoint')}: 
             </Text>
             <Text style={[settingsStyles.tokenText, { color: theme.textDark }]} numberOfLines={2} ellipsizeMode="middle">
               {tokenEndpoint}
@@ -83,7 +85,7 @@ export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
                 end={{ x: 1, y: 0 }}
               >
                 <Text style={[settingsStyles.buttonText, { color: theme.text }]}>
-                  Token'ı Kopyala
+                  {t('copyToken')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -99,7 +101,7 @@ export const TokenSettings: React.FC<TokenSettingsProps> = ({ pushToken }) => {
                 end={{ x: 1, y: 0 }}
               >
                 <Text style={[settingsStyles.buttonText, { color: theme.text }]}>
-                  Token'ı Gönder
+                  {t('sendToken')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
